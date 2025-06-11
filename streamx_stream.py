@@ -9,17 +9,26 @@ from dotenv import load_dotenv # Nos permiten cargar las variables de entorno de
 
 # Cargamos las variables del archivo .env
 load_dotenv()
-BEARER_TOKEN = os.getenv("BEARER_TOKEN")
+BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAGl%2F2QEAAAAAn%2BOBUvvmGvkoHYJDfJO6g2fGGLI%3DrdjyamxlNtfxgPxH19oLFMIoB4kPG9jyWvfus2r09v6x5dT3cE"
+print("Bearer token cargado:", repr(BEARER_TOKEN))
 
 # Función para las cabeceras necesarias a cada petición HTTP.
 def bearer_oauth(r):
     r.headers["Authorization"] = f"Bearer {BEARER_TOKEN}"
-    r.headers["User_Agent"] = "StreamXDataCollector"
+    r.headers["User-Agent"] = "StreamXDataCollector"
     return r
 
 # Función para definir las reglas de filtrado para el Stream.
 def set_stream_rules():
     rules_url = "https://api.twitter.com/2/tweets/search/stream/rules"
+    
+    response = requests.get(rules_url, auth=bearer_oauth)
+    if response.status_code !=200:
+        print("Error al obtener reglas existentes:", response.status_code, response.text)
+        return 
+    
+    existing_rules = response.json()
+
     # Obtiene reglas actuales para eliminarlas y evitar duplicados
     if "data" in existing_rules: 
         ids = [rule["id"] for rule in existing_rules["data"]]
